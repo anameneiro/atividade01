@@ -1,0 +1,16 @@
+
+
+nav { 
+ background: #333; 
+ padding: 1rem; 
+}
+
+nav a { 
+ color: white; 
+ margin: 0 1rem; 
+ text-decoration: none; 
+}
+
+nav a:hover { 
+ text-decoration: underline; 
+}
