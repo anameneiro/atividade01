@@ -1,23 +1,79 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>{{titulo}}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>Cadastro de {{ titulo }}</title>
 </head>
 <body>
- <h1>{{titulo}}</h1>
- <form action="/cad/caduser" method="POST">
-  <label>Nome:</label>
-  <input type="text" name="nome"> <br>
 
-  <label>E-mail</label>
-  <input type="email" name="email"> <br>
+<h4>Cadastro de {{ titulo }}</h4>
 
-  <label>Senha</label>
-  <input type="password" name="senha"> <br>
+<form action="{{ url_for('usuario_criar') }}" method="post">
+    <p>
+        <label for="nome">Nome</label>
+        <input type="text" id="nome" name="user" required>
+    </p>
+    
+    <p>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+    </p>
+    
+    <p>
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="passwd" required>
+    </p>
+    
+    <p>
+        <label for="end">Endereço</label>
+        <input type="text" id="end" name="end">
+    </p>
+    
+    <p><input type="submit" value="Cadastrar"></p>
+</form>
 
-  <button type="submit">Cadastrar</button>
- </form>
+<h4>Lista de {{ titulo }}</h4>
+<ul>
+{% for usuario in usuarios %}
+    <li>
+    {% if usuario_editar and usuario_editar.id_usuario == usuario.id_usuario %}
+
+        <form action="{{ url_for('usuario_editar', id_usuario=usuario.id_usuario) }}" method="POST">
+            <input type="text" name="nome" value="{{ usuario.nome }}" required>
+            <input type="email" name="email" value="{{ usuario.email }}" required>
+            <input type="text" name="end" value="{{ usuario.end }}">
+            <input type="password" name="senha" placeholder="Nova senha">
+            <button type="submit">Salvar</button>
+            <a href="{{ url_for('usuario_list') }}">Cancelar</a>
+        </form>
+    {% else %}
+        <strong>Nome:</strong> {{ usuario.nome }},
+        <strong>Email:</strong> {{ usuario.email }},
+        <strong>Endereço:</strong> {{ usuario.end }}
+        
+        <a href="{{ url_for('usuario_list', edit_id=usuario.id_usuario) }}">[Editar]</a>
+        
+
+        <form action="{{ url_for('usuario_deletar', id_usuario=usuario.id_usuario) }}" method="POST" style="display:inline;">
+            <button type="submit">[Deletar]</button>
+        </form>
+    {% endif %}
+    </li>
+{% endfor %}
+</ul>
+
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
 </body>
 </html>

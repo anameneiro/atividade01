@@ -3,26 +3,275 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Cadastro de Anúncio</title>
+ <title>Cadastro de {{ titulo }}</title>
+ <link rel="stylesheet" href="{{url_for('static', filename="style.css")}}">
+
 </head>
 <body>
- <h1>Cadastrar novo anúncio</h1>
+ <h3>{{ titulo }}</h3>
+ <a href="{{ url_for("index") }}">Início</a>
 
- <form>
-  <label> Título: </label>
-  <input type="text" name="titulo"> <br>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class="flash">{% for m in messages %}
+       <li>
+        {{ m }}
+       </li>
+       {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
 
-  <label>Descrição: </label>
-  <textarea name="descricao"></textarea> <br>
+<section class="form-area">
+ <h4>Novo anúncio</h4>
+ <form action="{{ url_for('anuncio_criar') }}" method="post">
+   <label>Título</label>
+   <input type="text" name="titulo" required>
 
-  <label> Categoria </label>
-  <select name="categoria">
-   <option value="eletronicos">Eletrônicos</option>
-   <option value="roupas">Roupas</option>
-   <option value="livros">Livros</option>
-  </select> <br>
+   <label>Descrição</label>
+   <textarea name="descricao" rows="3" required></textarea>
 
-  <button type="submit">Publicar anúncio</button>
+   <label>Preço</label>
+   <input type="number" step="0.01" name="preco" required>
+
+   <label>Categoria</label>
+   <select name="id_categoria" required>
+     {% for c in categorias %}<option value="{{ c.id_categoria }}">{{ c.nome }}</option>{% endfor %}
+   </select>
+
+   <label>Usuário (vendedor)</label>
+   <select name="id_usuario" required>
+     {% for u in usuarios %}<option value="{{ u.id_usuario }}">{{ u.nome }}</option>{% endfor %}
+   </select>
+
+   <button type="submit">Cadastrar</button>
  </form>
+</section>
+
+{% if anuncio_editar %}
+ <section class="form-area warn">
+  <h4>Editar anúncio #{{ anuncio_editar.id_anuncio }}</h4>
+  <form action="{{ url_for('anuncio_editar', id_anuncio=anuncio_editar.id_anuncio) }}" method="post">
+    <label>Título</label>
+    <input type="text" name="titulo" value="{{ anuncio_editar.titulo }}" required>
+
+    <label>Descrição</label>
+    <textarea name="descricao" rows="3" required>{{ anuncio_editar.descricao }}</textarea>
+
+    <label>Preço</label>
+    <input type="number" step="0.01" name="preco" value="{{ anuncio_editar.preco }}" required>
+
+    <label>Categoria</label>
+    <select name="id_categoria" required>
+      {% for c in categorias %}
+        <option value="{{ c.id_categoria }}" {% if c.id_categoria == anuncio_editar.id_categoria %}selected{% endif %}>{{ c.nome }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Usuário (vendedor)</label>
+     <select name="id_usuario" required>
+       {% for u in usuarios %}
+         <option value="{{ u.id_usuario }}" {% if u.id_usuario == anuncio_editar.id_usuario %}selected{% endif %}>{{ u.nome }}</option>
+       {% endfor %}
+     </select>
+     <button type="submit">Salvar</button>
+        <a class="btn" href="{{ url_for('anuncio_list') }}">Cancelar</a>
+      </form>
+    </section>
+
+  {% endif %}
+
+  {% if anuncio_deletar %}
+   <section class="form-area danger">
+     <h4>Confirmar exclusão do anúncio "{{ anuncio_deletar.titulo }}"?</h4>
+     <form action="{{ url_for('anuncio_deletar', id_anuncio=anuncio_deletar.id_anuncio) }}" method="post">
+       <button type="submit">Sim, excluir</button>
+       <a class="btn" href="{{ url_for('anuncio_list') }}">Cancelar</a>
+     </form>
+   </section>
+  {% endif %}
+
+  <h4>Lista de anúncios</h4>
+  <table>
+   <thead>
+     <tr>
+      <th>ID</th>
+      <th>Título</th>
+      <th>Preço</th>
+      <th>Categoria</th>
+      <th>Vendedor</th>
+      <th>Publicado</th>
+      <th>Ações</th>
+     </tr>
+   </thead>
+   <tbody>
+   {% for a in anuncios %}
+   <tr>
+    <td>{{ a.id_anuncio }}</td>
+    <td>{{ a.titulo }}</td>
+    <td>R$ {{ '%.2f'|format(a.preco) }}</td>
+    <td>{{ a.categoria.nome }}</td>
+    <td>{{ a.usuario.nome }}</td>
+    <td>{{ a.data_publicacao.strftime('%d/%m/%Y %H:%M') }}</td>
+    <td>
+     <a href="{{ url_for('anuncio_list', edit_id=a.id_anuncio) }}">Editar</a>
+     <a class="delete" href="{{ url_for('anuncio_list', confirm_delete_id=a.id_anuncio) }}">Excluir</a>
+    </td>
+  </tr>
+  {% endfor %}
+   </tbody>
+  </table>
+  <hr>
+
+  <h3>Compras </h3>
+  <section class="form-area">
+   <h4>Registrar compra</h4>
+   <form action="{{ url_for('compra_criar') }}" method="post">
+     <label>Comprador (Usuário)</label>
+     <select name="id_usuario" required>
+       {% for u in usuarios %}<option value="{{ u.id_usuario }}">{{ u.nome }}</option>{% endfor %}
+     </select>
+
+     <label>Anúncio</label>
+     <select name="id_anuncio" required>
+       {% for a in anuncios %}<option value="{{ a.id_anuncio }}">{{ a.titulo }}</option>{% endfor %}
+     </select>
+
+      <label>Quantidade</label>
+      <input type="number" name="quantidade" min="1" value="1" required>
+
+      <button type="submit">Registrar</button>
+    </form>
+  </section>
+
+  {% if compra_editar %}
+    <section class="form-area warn">
+      <h4>Editar compra #{{ compra_editar.id_compra }}</h4>
+      <form action="{{ url_for('compra_editar', id_compra=compra_editar.id_compra) }}" method="post">
+        <label>Comprador</label>
+        <select name="id_usuario">
+          {% for u in usuarios %}
+            <option value="{{ u.id_usuario }}" {% if u.id_usuario == compra_editar.id_usuario %}selected{% endif %}>{{ u.nome }}</option>
+          {% endfor %}
+        </select>
+
+        <label>Anúncio</label>
+        <select name="id_anuncio">
+          {% for a in anuncios %}
+            <option value="{{ a.id_anuncio }}" {% if a.id_anuncio == compra_editar.id_anuncio %}selected{% endif %}>{{ a.titulo }}</option>
+          {% endfor %}
+        </select>
+
+        <label>Quantidade</label>
+        <input type="number" name="quantidade" min="1" value="{{ compra_editar.quantidade }}">
+
+        <button type="submit">Salvar</button>
+        <a class="btn" href="{{ url_for('anuncio_list') }}">Cancelar</a>
+      </form>
+    </section>
+  {% endif %}
+
+  {% if compra_deletar %}
+    <section class="form-area danger">
+      <h4>Confirmar exclusão da compra #{{ compra_deletar.id_compra }}?</h4>
+      <form action="{{ url_for('compra_deletar', id_compra=compra_deletar.id_compra) }}" method="post">
+        <button type="submit">Sim, excluir</button>
+        <a class="btn" href="{{ url_for('anuncio_list') }}">Cancelar</a>
+      </form>
+    </section>
+  {% endif %}
+
+  <table>
+    <caption>Lista de compras</caption>
+    <thead><tr><th>ID</th><th>Comprador</th><th>Anúncio</th><th>Qtd</th><th>Data</th><th>Ações</th></tr></thead>
+    <tbody>
+      {% for c in compras %}
+      <tr>
+        <td>{{ c.id_compra }}</td>
+        <td>{{ c.comprador.nome }}</td>
+        <td>{{ c.anuncio_compra.titulo }}</td>
+        <td>{{ c.quantidade }}</td>
+        <td>{{ c.data_compra.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+          <a href="{{ url_for('anuncio_list', edit_compra_id=c.id_compra) }}">Editar</a>
+          <a class="delete" href="{{ url_for('anuncio_list', confirm_delete_compra_id=c.id_compra) }}">Excluir</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h3>Favoritos</h3>
+  <section class="form-area">
+    <h4>Adicionar favorito</h4>
+    <form action="{{ url_for('favorito_criar') }}" method="post">
+      <label>Usuário</label>
+      <select name="id_usuario" required>
+        {% for u in usuarios %}<option value="{{ u.id_usuario }}">{{ u.nome }}</option>{% endfor %}
+      </select>
+
+      <label>Anúncio</label>
+      <select name="id_anuncio" required>
+        {% for a in anuncios %}<option value="{{ a.id_anuncio }}">{{ a.titulo }}</option>{% endfor %}
+      </select>
+
+      <button type="submit">Adicionar</button>
+    </form>
+  </section>
+
+  {% if favorito_editar %}
+    <section class="form-area warn">
+      <h4>Editar favorito #{{ favorito_editar.id_favorito }}</h4>
+      <form action="{{ url_for('favorito_editar', id_favorito=favorito_editar.id_favorito) }}" method="post">
+        <label>Usuário</label>
+        <select name="id_usuario">
+          {% for u in usuarios %}
+            <option value="{{ u.id_usuario }}" {% if u.id_usuario == favorito_editar.id_usuario %}selected{% endif %}>{{ u.nome }}</option>
+          {% endfor %}
+        </select>
+
+        <label>Anúncio</label>
+        <select name="id_anuncio">
+          {% for a in anuncios %}
+            <option value="{{ a.id_anuncio }}" {% if a.id_anuncio == favorito_editar.id_anuncio %}selected{% endif %}>{{ a.titulo }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit">Salvar</button>
+        <a class="btn" href="{{ url_for('anuncio_list') }}">Cancelar</a>
+      </form>
+    </section>
+  {% endif %}
+
+  {% if favorito_deletar %}
+    <section class="form-area danger">
+      <h4>Confirmar exclusão do favorito #{{ favorito_deletar.id_favorito }}?</h4>
+      <form action="{{ url_for('favorito_deletar', id_favorito=favorito_deletar.id_favorito) }}" method="post">
+        <button type="submit">Sim, excluir</button>
+        <a class="btn" href="{{ url_for('anuncio_list') }}">Cancelar</a>
+      </form>
+    </section>
+  {% endif %}
+
+  <table>
+    <caption>Lista de favoritos</caption>
+    <thead><tr><th>ID</th><th>Usuário</th><th>Anúncio</th><th>Data</th><th>Ações</th></tr></thead>
+    <tbody>
+      {% for f in favoritos %}
+      <tr>
+        <td>{{ f.id_favorito }}</td>
+        <td>{{ f.usuario_favorito.nome }}</td>
+        <td>{{ f.anuncio_favorito.titulo }}</td>
+        <td>{{ f.data_favorito.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+          <a href="{{ url_for('anuncio_list', edit_fav_id=f.id_favorito) }}">Editar</a>
+          <a class="delete" href="{{ url_for('anuncio_list', confirm_delete_fav_id=f.id_favorito) }}">Excluir</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </body>
 </html>

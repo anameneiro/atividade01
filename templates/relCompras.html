@@ -4,28 +4,39 @@
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Relatório de Compras</title>
+ <link rel="stylesheet" href="{{url_for('static', filename="style.css")}}">
+
 </head>
 <body>
- <h1>Relatório de Compras</h1>
- <table border="1">
-  <tr>
-   <th>Produto</th>
-   <th>Preço</th>
-   <th>Data</th>
-  </tr>
+ <h3>Relatório de Compras</h3>
+  <a href="{{ url_for('index') }}">&larr; Início</a>
 
-  <tr>
-   <td>Produto 1</td>
-   <td>99,90</td>
-   <td>06/08/2025</td>
-  </tr>
+  <form class="filter" method="get" action="{{ url_for('rel_compras') }}">
+    <label>Filtrar por comprador</label>
+    <select name="usuario_id">
+      <option value="">-- Todos --</option>
+      {% for u in usuarios %}
+        <option value="{{ u.id_usuario }}" {% if usuario_id==u.id_usuario %}selected{% endif %}>{{ u.nome }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Filtrar</button>
+  </form>
 
-  <tr>
-   <td>Produto 2</td>
-   <td>99,90</td>
-   <td>06/08/2025</td>
-  </tr>
-
- </table>
+  <table>
+    <thead><tr><th>Comprador</th><th>Anúncio</th><th>Qtd</th><th>Total (R$)</th></tr></thead>
+    <tbody>
+      {% for l in linhas %}
+      <tr>
+        <td>{{ l.comprador }}</td>
+        <td>{{ l.anuncio }}</td>
+        <td>{{ l.qtd }}</td>
+        <td>{{ '%.2f'|format(l.total or 0) }}</td>
+      </tr>
+      {% endfor %}
+      {% if not linhas %}
+      <tr><td colspan="4">Sem dados para exibir.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
 </body>
 </html>

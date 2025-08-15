@@ -3,27 +3,26 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>E-commerce</title>
- <link rel="stylesheet" href="style.css">
+ <title>E-commerce - Início</title>
+ <link rel="stylesheet" href="{{url_for('static', filename="style.css")}}">
 </head>
 <body>
- <h1>Bem vindo ao nosso e-commerce</h1>
- <p>Confira nossos produtos em destaque</p>
+ <h1>Bem vindo(a) ao nosso e-commerce</h1>
+ <nav>
+  <a href="{{url_for("usuario_list")}}">Usuários</a>
+  <a href="{{url_for("categoria_list")}}">Categorias</a>
+  <a href="{{url_for("anuncio_list")}}">Anúncios / Compras / Favoritos</a>
+  <a href="{{urlo_for("pergunta_list")}}">Perguntas e Respostas</a>
+  <a href="{{url_for("rel_vendas")}}">Relatório de Vendas </a>
+  <a href="{{url_for("rel_compras")}}">Relatório de Compras</a>
+ </nav>
 
- <div>
-  <h3>Produto 01</h3>
-  <p>R$89,99</p>
-  <a href="/anuncios/compra">Comprar</a>
-  <a href="/anuncios/favoritos">Favoritar</a>
-  <a href="/anuncios/pergunta">Perguntar</a>
- </div>
-
- <div>
-  <h3>Produto 02</h3>
-  <p>R$89,99</p>
-  <a href="/anuncios/compra">Comprar</a>
-  <a href="/anuncios/favoritos">Favoritar</a>
-  <a href="/anuncios/pergunta">Perguntar</a>
- </div>
+ {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <ul>
+   {% for m in messages %} <li> {{ m }} </li> {% endfor %}
+  </ul>
+  {% endif %}
+ {% endwith %}
 </body>
 </html>

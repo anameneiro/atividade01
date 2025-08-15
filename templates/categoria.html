@@ -3,20 +3,72 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Categorias</title>
+ <title>Config {{ titulo }}</title>
+ <link rel="stylesheet" href="{{url_for('static', filename="style.css")}}">
 </head>
 <body>
- <h1>Configuração de Categorias</h1>
- <form >
-  <label >Nova Categoria:</label>
-  <input type="text" name="nova_categoria">
-  <button type="submit">Adicionar</button>
- </form>
- <h2>Categorias Existentes</h2>
- <ul>
-  <li>Eletrônicos</li>
-  <li>Roupas</li>
-  <li>Livros</li>
- </ul>
+ <h3>{{ titulo }}</h3>
+ <a href="{{url_for(index)}}">Início</a>
+ {% with messages = get_flashed_messages() %}
+
+    {% if messages %}
+
+      <ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>
+    
+      {% endif %}
+  
+      {% endwith %}
+ <section class="form-area">
+  <h4>Nova categoria</h4>
+  <form action="{{ url_for('categoria_criar') }}" method="post">
+    <label>Nome</label>
+    <input type="text" name="nome" required>
+    <button type="submit">Cadastrar</button>
+  </form>
+  </section>
+
+  {% if categoria_editar %}
+   <section class="form-area warn">
+     <h4>Editar categoria #{{ categoria_editar.id_categoria }}</h4>
+     <form action="{{ url_for('categoria_editar', id_categoria=categoria_editar.id_categoria) }}" method="post">
+       <label>Nome</label>
+       <input type="text" name="nome" value="{{ categoria_editar.nome }}" required>
+       <button type="submit">Salvar</button>
+       <a class="btn" href="{{ url_for('categoria_list') }}">Cancelar</a>
+     </form>
+   </section>
+
+  {% endif %}
+
+ {% if categoria_deletar %}
+  <section class="form-area danger">
+    <h4>Confirmar exclusão da categoria "{{ categoria_deletar.nome }}"?</h4>
+    <form action="{{ url_for('categoria_deletar', id_categoria=categoria_deletar.id_categoria) }}" method="post">
+      <button type="submit">Sim, excluir</button>
+      <a class="btn" href="{{ url_for('categoria_list') }}">Cancelar</a>
+    </form>
+  </section>
+
+ {% endif %}
+
+ <h4>Lista de categorias</h4>
+  <table>
+    <thead><tr><th>ID</th><th>Nome</th><th>Ações</th></tr></thead>
+    <tbody>
+      {% for c in categorias %}
+      <tr>
+       <td>{{ c.id_categoria }}</td>
+       <td>{{ c.nome }}</td>
+       <td>
+         <a href="{{ url_for('categoria_list', edit_id=c.id_categoria) }}">Editar</a>
+         <a class="delete" href="{{ url_for('categoria_list', confirm_delete_id=c.id_categoria) }}">Excluir</a>
+       </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+
+
 </body>
 </html>

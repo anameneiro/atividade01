@@ -1,5 +1,5 @@
 
-
+/* 
 nav { 
  background: #333; 
  padding: 1rem; 
@@ -13,4 +13,100 @@ nav a {
 
 nav a:hover { 
  text-decoration: underline; 
+} */
+
+
+body { 
+ font-family: Arial, Helvetica, sans-serif; 
+ padding: 16px; 
+}
+
+h2,h3,h4 {
+ margin: 8px 0; 
+}
+
+.menu a { 
+ margin-right: 12px; 
+}
+
+.form-area { 
+ border: 1px solid #ddd; 
+ padding: 12px; 
+ margin: 12px 0; 
+ border-radius: 6px; 
+}
+
+.form-area.warn {
+ border-color: #f0ad4e; 
+ background: #fff8e6; 
+}
+
+.form-area.danger { 
+ border-color: #d9534f; 
+ background: #ffecec; 
+}
+
+label { 
+ display:block; 
+ margin-top:8px; 
+}
+
+input, textarea, select { 
+ width: 100%; 
+ padding: 6px; 
+ margin-top: 4px; 
+ box-sizing: border-box; 
+}
+
+button, .btn, .delete { 
+ margin-top: 8px; 
+ padding: 6px 10px; 
+ text-decoration: none; 
+ display: inline-block; 
+}
+.btn { 
+ background:#eee; border:1px solid #ccc; 
+ color:#333; 
+}
+
+.delete { 
+ color:#b30000; 
+}
+
+table { 
+ width: 100%; 
+ border-collapse: collapse; 
+ margin-top: 10px; 
+}
+
+th, td { 
+ border: 1px solid #ddd; 
+ padding: 6px; 
+ text-align: left; 
+}
+
+thead { 
+ background: #f6f6f6; 
+}
+
+caption { 
+ text-align:left; 
+ font-weight:bold; 
+ margin:8px 0; 
+}
+
+.flash { 
+ list-style: none; 
+ padding: 0; 
+}
+
+.flash li { 
+ background: #e7f9ee; 
+ border:1px solid #bfe5cc; 
+ margin: 6px 0; 
+ padding: 6px; 
+}
+
+.filter { 
+ margin: 10px 0; 
 }
