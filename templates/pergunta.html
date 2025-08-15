@@ -1,81 +1,97 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>{{ titulo }}</title>
- <link rel="stylesheet" href="{{url_for('static', filename="style.css")}}">
-</head>
-<body>
- <h3>{{ titulo }}</h3>
- <a href="{{ url_for('index') }}">&larr; Início</a>
- 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ titulo }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-..." crossorigin="anonymous">
+  </head>
+  <body class="container py-4">
+
+  <h3 class="mb-3">{{ titulo }}</h3>
+  <a href="{{ url_for('index') }}" class="btn btn-primary">&larr; Início</a>
+
 {% with messages = get_flashed_messages() %}
     {% if messages %}
-      <ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>
+      <div class="alert alert-info">
+        <ul class="mb-0">
+          {% for m in messages %}<li>{{ m }}</li>{% endfor %}
+        </ul>
+      </div>
     {% endif %}
-  {% endwith %}
+{% endwith %}
 
-  <section class="form-area">
-    <h4>Nova pergunta</h4>
-    <form action="{{ url_for('pergunta_criar') }}" method="post">
-      <label>Texto</label>
-      <textarea name="texto" rows="2" required></textarea>
-
-      <label>Usuário (quem pergunta)</label>
-      <select name="id_usuario" required>
+<section class="mb-4 pt-3">
+  <h4>Nova pergunta</h4>
+  <form action="{{ url_for('pergunta_criar') }}" method="post" class="row g-3">
+    <div class="col-12">
+      <label class="form-label">Texto</label>
+      <textarea name="texto" rows="2" class="form-control" required></textarea>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Usuário (quem pergunta)</label>
+      <select name="id_usuario" class="form-select" required>
         {% for u in usuarios %}<option value="{{ u.id_usuario }}">{{ u.nome }}</option>{% endfor %}
       </select>
-
-      <label>Anúncio</label>
-      <select name="id_anuncio" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Anúncio</label>
+      <select name="id_anuncio" class="form-select" required>
         {% for a in anuncios %}<option value="{{ a.id_anuncio }}">{{ a.titulo }}</option>{% endfor %}
       </select>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Perguntar</button>
+    </div>
+  </form>
+</section>
 
-      <button type="submit">Perguntar</button>
-    </form>
-  </section>
+{% if pergunta_editar %}
+<section class="mb-4 border p-3 rounded bg-light">
+  <h4>Editar pergunta #{{ pergunta_editar.id_pergunta }}</h4>
+  <form action="{{ url_for('pergunta_editar', id_pergunta=pergunta_editar.id_pergunta) }}" method="post" class="row g-3">
+    <div class="col-12">
+      <label class="form-label">Texto</label>
+      <textarea name="texto" rows="2" class="form-control">{{ pergunta_editar.texto }}</textarea>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Usuário</label>
+      <select name="id_usuario" class="form-select">
+        {% for u in usuarios %}
+          <option value="{{ u.id_usuario }}" {% if u.id_usuario == pergunta_editar.id_usuario %}selected{% endif %}>{{ u.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Anúncio</label>
+      <select name="id_anuncio" class="form-select">
+        {% for a in anuncios %}
+          <option value="{{ a.id_anuncio }}" {% if a.id_anuncio == pergunta_editar.id_anuncio %}selected{% endif %}>{{ a.titulo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-success">Salvar</button>
+      <a class="btn btn-secondary" href="{{ url_for('pergunta_list') }}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endif %}
 
-  {% if pergunta_editar %}
-    <section class="form-area warn">
-      <h4>Editar pergunta #{{ pergunta_editar.id_pergunta }}</h4>
-      <form action="{{ url_for('pergunta_editar', id_pergunta=pergunta_editar.id_pergunta) }}" method="post">
-        <label>Texto</label>
-        <textarea name="texto" rows="2">{{ pergunta_editar.texto }}</textarea>
-
-        <label>Usuário</label>
-        <select name="id_usuario">
-          {% for u in usuarios %}
-            <option value="{{ u.id_usuario }}" {% if u.id_usuario == pergunta_editar.id_usuario %}selected{% endif %}>{{ u.nome }}</option>
-          {% endfor %}
-        </select>
-
-        <label>Anúncio</label>
-        <select name="id_anuncio">
-          {% for a in anuncios %}
-            <option value="{{ a.id_anuncio }}" {% if a.id_anuncio == pergunta_editar.id_anuncio %}selected{% endif %}>{{ a.titulo }}</option>
-          {% endfor %}
-        </select>
-
-        <button type="submit">Salvar</button>
-        <a class="btn" href="{{ url_for('pergunta_list') }}">Cancelar</a>
-      </form>
-    </section>
-  {% endif %}
-
-  {% if pergunta_deletar %}
-    <section class="form-area danger">
-      <h4>Confirmar exclusão da pergunta #{{ pergunta_deletar.id_pergunta }}?</h4>
-      <form action="{{ url_for('pergunta_deletar', id_pergunta=pergunta_deletar.id_pergunta) }}" method="post">
-        <button type="submit">Sim, excluir</button>
-        <a class="btn" href="{{ url_for('pergunta_list') }}">Cancelar</a>
-      </form>
-    </section>
-  {% endif %}
-
-  <h4>Perguntas</h4>
-  <table>
-    <thead><tr><th>ID</th><th>Texto</th><th>Usuário</th><th>Anúncio</th><th>Data</th><th>Ações</th></tr></thead>
+<h4>Perguntas</h4>
+<div class="table-responsive mb-4">
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Texto</th>
+        <th>Usuário</th>
+        <th>Anúncio</th>
+        <th>Data</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
     <tbody>
       {% for p in perguntas %}
       <tr>
@@ -85,61 +101,51 @@
         <td>{{ p.anuncio.titulo }}</td>
         <td>{{ p.data_pergunta.strftime('%d/%m/%Y %H:%M') }}</td>
         <td>
-          <a href="{{ url_for('pergunta_list', edit_id=p.id_pergunta) }}">Editar</a>
-          <a class="delete" href="{{ url_for('pergunta_list', confirm_delete_id=p.id_pergunta) }}">Excluir</a>
+          <a href="{{ url_for('pergunta_list', edit_id=p.id_pergunta) }}" class="btn btn-sm btn-warning">Editar</a>
+          <a href="{{ url_for('pergunta_list', confirm_delete_id=p.id_pergunta) }}" class="btn btn-sm btn-danger">Excluir</a>
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+</div>
 
-  <hr>
-
-  <h3>Respostas</h3>
-  <section class="form-area">
-    <h4>Nova resposta (uma por pergunta)</h4>
-    <form action="{{ url_for('resposta_criar') }}" method="post">
-      <label>Texto</label>
-      <textarea name="texto" rows="2" required></textarea>
-
-      <label>Pergunta</label>
-      <select name="id_pergunta" required>
+<h3>Respostas</h3>
+<section class="mb-4">
+  <h4>Nova resposta (uma por pergunta)</h4>
+  <form action="{{ url_for('resposta_criar') }}" method="post" class="row g-3">
+    <div class="col-12">
+      <label class="form-label">Texto</label>
+      <textarea name="texto" rows="2" class="form-control" required></textarea>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Pergunta</label>
+      <select name="id_pergunta" class="form-select" required>
         {% for p in perguntas %}
           {% if not p.resposta %}
             <option value="{{ p.id_pergunta }}">#{{ p.id_pergunta }} - {{ p.texto[:40] }}...</option>
           {% endif %}
         {% endfor %}
       </select>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Responder</button>
+    </div>
+  </form>
+</section>
 
-      <button type="submit">Responder</button>
-    </form>
-  </section>
-
-  {% if resposta_editar %}
-    <section class="form-area warn">
-      <h4>Editar resposta #{{ resposta_editar.id_resposta }}</h4>
-      <form action="{{ url_for('resposta_editar', id_resposta=resposta_editar.id_resposta) }}" method="post">
-        <label>Texto</label>
-        <textarea name="texto" rows="2">{{ resposta_editar.texto }}</textarea>
-        <button type="submit">Salvar</button>
-        <a class="btn" href="{{ url_for('pergunta_list') }}">Cancelar</a>
-      </form>
-    </section>
-  {% endif %}
-
-  {% if resposta_deletar %}
-    <section class="form-area danger">
-      <h4>Confirmar exclusão da resposta #{{ resposta_deletar.id_resposta }}?</h4>
-      <form action="{{ url_for('resposta_deletar', id_resposta=resposta_deletar.id_resposta) }}" method="post">
-        <button type="submit">Sim, excluir</button>
-        <a class="btn" href="{{ url_for('pergunta_list') }}">Cancelar</a>
-      </form>
-    </section>
-  {% endif %}
-
-  <table>
-    <caption>Lista de respostas</caption>
-    <thead><tr><th>ID</th><th>Pergunta</th><th>Texto</th><th>Data</th><th>Ações</th></tr></thead>
+{% if respostas %}
+<div class="table-responsive mb-4">
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Pergunta</th>
+        <th>Texto</th>
+        <th>Data</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
     <tbody>
       {% for r in respostas %}
       <tr>
@@ -148,12 +154,16 @@
         <td>{{ r.texto }}</td>
         <td>{{ r.data_resposta.strftime('%d/%m/%Y %H:%M') }}</td>
         <td>
-          <a href="{{ url_for('pergunta_list', edit_resposta_id=r.id_resposta) }}">Editar</a>
-          <a class="delete" href="{{ url_for('pergunta_list', confirm_delete_resposta_id=r.id_resposta) }}">Excluir</a>
+          <a href="{{ url_for('pergunta_list', edit_resposta_id=r.id_resposta) }}" class="btn btn-sm btn-warning">Editar</a>
+          <a href="{{ url_for('pergunta_list', confirm_delete_resposta_id=r.id_resposta) }}" class="btn btn-sm btn-danger">Excluir</a>
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-..." crossorigin="anonymous"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
@@ -8,6 +8,7 @@ import os
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:ANAbanana911.@localhost/ecommerce'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = "1234"
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -18,6 +19,7 @@ class Usuario(db.Model):
  nome = db.Column(db.String(256), nullable=False)
  email = db.Column(db.String(256), unique=True, nullable=False)
  senha = db.Column(db.String(256), nullable=False)
+ end = db.Column(db.String(200))
  data_cadastro = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
  anuncios = db.relationship("Anuncio", backref="usuario", lazy=True)
