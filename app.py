@@ -3,12 +3,21 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 import os
+from flask_login import (current_user, LoginManager,
+                             login_user, logout_user,
+                             login_required)
+import hashlib
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:ANAbanana911.@localhost/ecommerce'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://naneda:ANAbanana911.@naneda.mysql.pythonanywhere-services.com/naneda$ecommerce'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "1234"
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -26,6 +35,18 @@ class Usuario(db.Model):
  perguntas = db.relationship("Pergunta", backref="autor_pergunta", lazy=True)
  compras = db.relationship("Compra", backref="comprador", lazy=True)
  favoritos = db.relationship("Favorito", backref="usuario_favorito", lazy=True)
+
+ def is_authenticated(self):
+        return True
+
+ def is_active(self):
+     return True
+
+ def is_anonymous(self):
+     return False
+
+ def get_id(self):
+     return str(self.id_usuario)
 
 class Categoria(db.Model):
  __tablename__="categoria"
@@ -85,12 +106,37 @@ class Favorito(db.Model):
  id_anuncio = db.Column(db.Integer, db.ForeignKey("anuncio.id_anuncio"), nullable=False)
  data_favorito = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
+@login_manager.user_loader
+def load_user(user_id):
+ return Usuario.query.get(int(user_id))
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+  if request.method == "POST":
+    email = request.form.get("email")
+    senha = request.form.get("senha")
+
+    user = Usuario.query.filter_by(email=email, senha=senha).first()
+
+    if user: 
+      login_user(user)
+      return redirect(url_for("index"))
+    else:
+      return redirect(url_for("login"))
+  
+  return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+  logout_user()
+  return redirect(url_for("index"))
 
 @app.route("/")
 def index():
  return render_template('index.html')
 
 @app.route("/cad/usuario")
+@login_required
 def usuario_list():
  usuarios = Usuario.query.order_by(Usuario.id_usuario.desc()).all()
  edit_id = request.args.get("edit_id", type=int)
@@ -105,6 +151,8 @@ def usuario_list():
 
 @app.route("/usuario/criar", methods=["POST"])
 def usuario_criar():
+ hash = hashlib.sha512(str(request.form.get('passwd')).encode("utf-8")).hexdigest()
+ usuario = Usuario(request.form.get('user'), request.form.get('email'),hash,request.form.get('end'))
  nome = request.form.get("user", "").strip()
  email = request.form.get("email", "").strip()
  senha = request.form.get("passwd", "").strip()
@@ -123,7 +171,7 @@ def usuario_editar(id_usuario):
  u = Usuario.query.get_or_404(id_usuario)
  u.nome = request.form.get("nome", u.nome)
  u.email = request.form.get("email", u.email)
- u.senha = request.form.get("senha", u.senha)
+ u.senha = hashlib.sha512(str(request.form.get('passwd')).encode("utf-8")).hexdigest()
  db.session.commit()
  flash("Usuário atualizado!")
  return redirect(url_for("usuario_list"))
@@ -137,6 +185,7 @@ def usuario_deletar(id_usuario):
  return redirect(url_for("usuario_list"))
 
 @app.route("/config/categoria")
+@login_required
 def categoria_list():
  categorias = Categoria.query.order_by(Categoria.id_categoria.desc()).all()
  edit_id = request.args.get("edit_id", type=int)
@@ -177,6 +226,7 @@ def categoria_deletar(id_categoria):
  return redirect(url_for("categoria_list"))
 
 @app.route("/cad/anuncio")
+@login_required
 def anuncio_list():
  anuncios = (Anuncio.query
              .order_by(Anuncio.id_anuncio.desc())
@@ -257,6 +307,7 @@ def anuncio_deletar(id_anuncio):
  return redirect(url_for("anuncio_list"))
 
 @app.route("/anuncios/pergunta")
+@login_required
 def pergunta_list():
  perguntas = (Pergunta.query
               .order_by(Pergunta.id_pergunta.desc())
@@ -410,6 +461,7 @@ def favorito_deletar(id_favorito):
  return redirect(url_for("anuncio_list"))
 
 @app.route("/relatorios/vendas")
+@login_required
 def rel_vendas():
  """ Relatório de vendas por vendedor (dono do anúncio).
      Filtre por ?usuario_id= (id do vendedor) se quiser. """
@@ -434,6 +486,7 @@ def rel_vendas():
  return render_template("relVendas.html", linhas=linhas, usuarios=usuarios, usuario_id=usuario_id)
 
 @app.route("/relatorios/compras")
+@login_required
 def rel_compras():
     """ Relatório de compras por comprador.
         Filtre por ?usuario_id= (id do comprador) se quiser. """
